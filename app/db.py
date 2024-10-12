@@ -24,7 +24,13 @@ def get_db_engine(mysql_host, mysql_port, mysql_username, mysql_password, mysql_
     获取数据库引擎
     """
     # 1. 创建数据库引擎
-    db_url = f"mysql+pymysql://{mysql_username}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}"
+    db_url = "mysql+pymysql://{mysql_username}:{mysql_password}@{mysql_host}:{mysql_port}/{mysql_database}".format(
+        mysql_host=mysql_host,
+        mysql_port=mysql_port,
+        mysql_username=mysql_username,
+        mysql_password=mysql_password,
+        mysql_database=mysql_database
+    )
     engine = create_engine(db_url)
     # 2. 不更改表结构
     # Base.metadata.create_all(engine)
@@ -41,6 +47,6 @@ def get_db_session(engine):
     session = Session()
     # 2. 查看数据库版本
     db_version = session.execute(text("SELECT VERSION()")).fetchall()[0][0]
-    print("="*50 + "\nMySQL 数据库连接成功，版本为 {}\n".format(db_version) + "="*50)
+    print("MySQL 数据库连接成功，版本为 {}\n".format(db_version) + "="*50)
     # 3. 返回
     return session

@@ -13,6 +13,7 @@ from config import CONFIG
 
 from db import get_db_engine, get_db_session
 from excel import get_file_path, load_data
+from onenav.site import generate_sites_from_excel_data
 
 
 def check_config():
@@ -51,6 +52,7 @@ def check_config():
         print("同步模式读取失败，请检查配置文件！")
         return False
     # 4. 返回
+    print("="*50 + "\n配置文件检查通过！\n" + "="*50)
     return True
 
 
@@ -70,15 +72,19 @@ def main():
         CONFIG["mysql"]["database"]
     )
     # 3. 获取数据库引擎
-    # engine = get_db_engine(
-    #     mysql_host=mysql_host,
-    #     mysql_port=mysql_port,
-    #     mysql_username=mysql_username,
-    #     mysql_password=mysql_password,
-    #     mysql_database=mysql_database
-    # )
+    engine = get_db_engine(
+        mysql_host=mysql_host,
+        mysql_port=mysql_port,
+        mysql_username=mysql_username,
+        mysql_password=mysql_password,
+        mysql_database=mysql_database
+    )
     # 4. 建立数据库连接
-    # session = get_db_session(engine)
+    try:
+        session = get_db_session(engine)
+    except Exception as e:
+        print("MySQL 数据库连接失败，请检查配置文件和数据库连接！")
+        return
     # 5. 获取 Excel 文件路径
     try:
         file_name = CONFIG["excel"]["file_name"]
@@ -90,7 +96,7 @@ def main():
     # 6. 读取 Excel 数据
     data = load_data(file_path)
     # 7. 使用 Excel 表中的数据创建 ORM 对象
-    # todo...
+    sites = generate_sites_from_excel_data(data)
     # 8. 获取同步模式
     sync_mode = CONFIG["sync"]["mode"]
     # 9. 同步到数据库中

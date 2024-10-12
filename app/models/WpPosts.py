@@ -11,6 +11,8 @@
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, DECIMAL, text, Text
 
+from db import Base
+
 
 class WpPosts(Base):
     """

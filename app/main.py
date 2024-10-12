@@ -10,7 +10,6 @@
 
 
 from config import CONFIG
-
 from db import get_db_engine, get_db_session
 from excel import get_file_path, load_data
 from onenav.site import generate_sites_from_excel_data

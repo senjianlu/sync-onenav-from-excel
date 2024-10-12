@@ -10,7 +10,9 @@
 
 
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import text
 
 
 # 基类
@@ -38,6 +40,7 @@ def get_db_session(engine):
     Session = sessionmaker(bind=engine)
     session = Session()
     # 2. 查看数据库版本
-    print(session.execute("SELECT VERSION()").fetchall())
+    db_version = session.execute(text("SELECT VERSION()")).fetchall()[0][0]
+    print("="*50 + "\nMySQL 数据库连接成功，版本为 {}\n".format(db_version) + "="*50)
     # 3. 返回
     return session

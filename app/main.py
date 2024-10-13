@@ -13,6 +13,7 @@ from config import CONFIG
 from db import get_db_engine, get_db_session
 from excel import get_file_path, load_data
 from onenav.site import generate_sites_from_excel_data
+from sync import do_sync
 
 
 def check_config():
@@ -45,12 +46,20 @@ def check_config():
     # 3. 检查同步模式
     try:
         mode = CONFIG["sync"]["mode"]
-        if mode not in ["incremental", "full"]:
+        if mode not in ["part", "full"]:
             raise Exception("同步模式错误！")
     except Exception as e:
         print("同步模式读取失败，请检查配置文件！")
         return False
-    # 4. 返回
+    # 4. 导航站点信息
+    try:
+        domain = CONFIG["onenav"]["domain"]
+        if domain == "":
+            raise Exception("导航站点域名为空！")
+    except Exception as e:
+        print("导航站点信息读取失败，请检查配置文件！")
+        return False
+    # 5. 返回
     print("="*50 + "\n配置文件检查通过！\n" + "="*50)
     return True
 
@@ -96,13 +105,14 @@ def main():
     data = load_data(file_path)
     # 7. 使用 Excel 表中的数据创建 ORM 对象
     sites = generate_sites_from_excel_data(data)
-    # 8. 获取同步模式
+    # 8. 获取同步模式和导航站点域名
     sync_mode = CONFIG["sync"]["mode"]
+    domain = CONFIG["onenav"]["domain"].rstrip("/")
     # 9. 同步到数据库中
-    # todo...
+    do_sync(sync_mode, domain, session, sites)
     # 10. 关闭数据库连接
-    # session.close()
-        
+    session.close()
+
 
 if __name__ == "__main__":
     main()

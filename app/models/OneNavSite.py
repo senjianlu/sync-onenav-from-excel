@@ -479,7 +479,7 @@ class OneNavSite():
             wp_postmeta_rows=wp_postmeta_rows,
             wp_term_taxonomy_rows=wp_term_taxonomy_rows
         )
-        # 6. 返回
+        # 7. 返回
         return site
 
     @staticmethod

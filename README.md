@@ -1,9 +1,10 @@
 <div align="center">
-    <img src=https://raw.githubusercontent.com/senjianlu/sync-onenav-from-excel/master/logo.png width=20%/>
+    <img src=https://raw.githubusercontent.com/senjianlu/sync-onenav-from-excel/master/logo.png width=15%/>
 </div>
 
 # sync-onenav-from-excel
 将 Excel 中的网址同步到 OneNav 一为导航中。  
+**⚠️ 该脚本仅适用于 `V4.1810` 和其前后没有数据结构变化的版本**！
 
 ## 事前提醒
 ### 一、该脚本只对来源是 Excel 的网址进行同步

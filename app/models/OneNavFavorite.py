@@ -9,6 +9,9 @@
 # @DESCRIPTION: 网址分类模型
 
 
+import copy
+from sqlalchemy import and_
+
 from models.WpTerms import WpTerms
 from models.WpTermmeta import WpTermmeta
 from models.WpTermTaxonomy import WpTermTaxonomy
@@ -145,6 +148,37 @@ class OneNavFavorite():
         self._term_id = _term_id
         # 插入表后的 term_taxonomy_id
         self._term_taxonomy_id = _term_taxonomy_id
+    
+    @staticmethod
+    def check_all(favorite_ids: list, session):
+        """
+        函数说明: 查询网站分类是否存在
+        :param favorite_ids: 网址分类 ID 列表
+        :param session: 数据库会话
+        """
+        # 1. 查询 wp_term_taxonomy 表中数量是否一致
+        temp_favorite_ids = copy.deepcopy(favorite_ids)
+        wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
+            and_(
+                WpTermTaxonomy.term_id.in_(favorite_ids),
+                WpTermTaxonomy.taxonomy == "favorites"
+            )
+        ).all()
+        for wp_term_taxonomy_row in wp_term_taxonomy_rows:
+            temp_favorite_ids.remove(wp_term_taxonomy_row.term_id)
+        if temp_favorite_ids:
+            print("网址分类 ID {} 在 wp_term_taxonomy 表中不存在".format(temp_favorite_ids))
+            return False
+        # 2. 查询 wp_terms 表中数量是否一致
+        temp_favorite_ids = copy.deepcopy(favorite_ids)
+        wp_terms_rows = session.query(WpTerms).filter(WpTerms.term_id.in_(favorite_ids))
+        for wp_terms_row in wp_terms_rows:
+            temp_favorite_ids.remove(wp_terms_row.term_id)
+        if temp_favorite_ids:
+            print("网址分类 ID {} 在 wp_terms 表中不存在".format(temp_favorite_ids))
+            return False
+        # 3. 返回
+        return True
 
     @staticmethod
     def select(term_id: int, session):

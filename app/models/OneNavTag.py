@@ -9,7 +9,9 @@
 # @DESCRIPTION: 网址标签模型
 
 
+import copy
 import phpserialize
+from sqlalchemy import and_
 
 from models.WpTerms import WpTerms
 from models.WpTermmeta import WpTermmeta
@@ -89,6 +91,37 @@ class OneNavTag():
         self.seo_title = seo_title
         self.seo_metakey = seo_metakey
         self.seo_desc = seo_desc
+
+    @staticmethod
+    def check_all(tag_ids: list, session):
+        """
+        函数说明: 查询分类是否存在
+        :param tag_ids: 分类 ID 列表
+        :param session: 数据库会话
+        """
+        # 1. 查询 wp_term_taxonomy 表中数量是否一致
+        temp_tag_ids = copy.deepcopy(tag_ids)
+        wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
+            and_(
+                WpTermTaxonomy.term_id.in_(tag_ids),
+                WpTermTaxonomy.taxonomy == "sitetag"
+            )
+        ).all()
+        for wp_term_taxonomy_row in wp_term_taxonomy_rows:
+            temp_tag_ids.remove(wp_term_taxonomy_row.term_id)
+        if temp_tag_ids:
+            print("网址标签 ID {} 在 wp_term_taxonomy 表中不存在".format(temp_tag_ids))
+            return False
+        # 2. 查询 wp_terms 表中数量是否一致
+        temp_tag_ids = copy.deepcopy(tag_ids)
+        wp_terms_rows = session.query(WpTerms).filter(WpTerms.term_id.in_(tag_ids)).all()
+        for wp_terms_row in wp_terms_rows:
+            temp_tag_ids.remove(wp_terms_row.term_id)
+        if temp_tag_ids:
+            print("网址标签 ID {} 在 wp_terms 表中不存在".format(temp_tag_ids))
+            return False
+        # 3. 返回
+        return True
     
     @staticmethod
     def select(term_id: int, session):

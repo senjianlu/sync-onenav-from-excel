@@ -54,6 +54,19 @@ def test_04():
             for spare_link in site.spare_links:
                 print(spare_link.__dict__)
 
+def test_05(session):
+    """
+    函数说明: 测试查询网址分类是否存在
+    """
+    is_pass = one_nav_favorite.check_all([3], session)
+    print(is_pass)
+
+def test_06(session):
+    """
+    函数说明: 测试查询网址标签是否存在
+    """
+    is_pass = one_nav_tag.check_all([1, 10], session)
+    print(is_pass)
 
 if __name__ == "__main__":
     # 1. 建立书库库连接
@@ -78,7 +91,9 @@ if __name__ == "__main__":
         # test_01(session)
         # test_02(session)
         # test_03(session)
-        test_04()
+        # test_04()
+        # test_05(session)
+        test_06(session)
     except Exception as e:
         print(e)
     finally:

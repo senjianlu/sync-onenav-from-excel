@@ -18,19 +18,19 @@ from models.WpPostmeta import WpPostmeta
 from models.WpTermTaxonomy import WpTermTaxonomy
 from models.WpTermRelationships import WpTermRelationships
 from models.OneNavSpareSite import OneNavSpareSite
+from models.OneNavFavorite import OneNavFavorite
 
 
-def _generate_class_from_rows(sync_site_id, wp_post_row, wp_postmeta_rows, wp_term_relationships_rows):
+def _generate_class_from_rows(sync_site_id, wp_post_row, wp_postmeta_rows, wp_term_taxonomy_rows):
     """
     函数说明: 生成网址对象
     :param sync_site_id: 用来将 Excel 中属于与表中数据建立关系的字段
     :param wp_post_row: wp_posts 表数据
     :param wp_postmeta_rows: wp_postmeta 表数据列表
-    :param wp_term_relationships_rows: wp_term_relationships 表数据列表
+    :param wp_term_taxonomy_rows: wp_term_taxonomy 表数据列表
     """
     # 1. 网址分类 ID 列表
-    favorite_ids = [str(wp_term_relationships_row.term_taxonomy_id) for wp_term_relationships_row in
-                    wp_term_relationships_rows]
+    favorite_ids = [wp_term_taxonomy_row.term_id for wp_term_taxonomy_row in wp_term_taxonomy_rows]
     # 2. 网址标签 ID 列表
     tag_ids = []
     # 3. 标题
@@ -358,20 +358,21 @@ def _generate_new_wp_postmeta_rows(post_id, site):
     # 3. 返回
     return new_wp_postmeta_rows
 
-def _generate_new_wp_term_relationships_rows(post_id, site):
+def _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows):
     """
     函数说明: 生成 wp_term_relationships 表数据
     :param post_id: 文章 ID
-    :param site: 网址对象
+    :param wp_term_taxonomy_rows: wp_term_taxonomy 表数据列表
     """
     new_wp_term_relationships_rows = []
     # 1. 遍历网址分类 ID 列表
-    for favorite_id in site.favorite_ids:
-        new_wp_term_relationships_rows.append(WpTermRelationships(
+    for wp_term_taxonomy_row in wp_term_taxonomy_rows:
+        new_wp_term_relationships_row = WpTermRelationships(
             object_id=post_id,
-            term_taxonomy_id=favorite_id,
+            term_taxonomy_id=wp_term_taxonomy_row.term_taxonomy_id,
             term_order=0
-        ))
+        )
+        new_wp_term_relationships_rows.append(new_wp_term_relationships_row)
     # 2. 返回
     return new_wp_term_relationships_rows
 
@@ -460,12 +461,16 @@ class OneNavSite():
         wp_term_relationships_rows = session.query(WpTermRelationships).filter(
             WpTermRelationships.object_id == post_id
         ).all()
-        # 5. 生成网址对象
+        # 5. 通过 wp_term_relationships_rows 的 term_taxonomy_id 查询网址分类
+        wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
+            WpTermTaxonomy.term_taxonomy_id.in_([wp_term_relationships_row.term_taxonomy_id for wp_term_relationships_row in wp_term_relationships_rows])
+        ).all() 
+        # 6. 生成网址对象
         site = _generate_class_from_rows(
             sync_site_id=sync_site_id,
             wp_post_row=wp_post_row,
             wp_postmeta_rows=wp_postmeta_rows,
-            wp_term_relationships_rows=wp_term_relationships_rows
+            wp_term_taxonomy_rows=wp_term_taxonomy_rows
         )
         # 6. 返回
         return site
@@ -507,12 +512,16 @@ class OneNavSite():
             wp_term_relationships_rows = session.query(WpTermRelationships).filter(
                 WpTermRelationships.object_id == post_id
             ).all()
-            # 6. 生成网址对象
+            # 6. 通过 wp_term_relationships_rows 的 term_taxonomy_id 查询网址分类
+            wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
+                WpTermTaxonomy.term_taxonomy_id.in_([wp_term_relationships_row.term_taxonomy_id for wp_term_relationships_row in wp_term_relationships_rows])
+            ).all()
+            # 7. 生成网址对象
             site = _generate_class_from_rows(
                 sync_site_id=sync_site_id,
                 wp_post_row=wp_post_row,
                 wp_postmeta_rows=wp_postmeta_rows,
-                wp_term_relationships_rows=wp_term_relationships_rows
+                wp_term_taxonomy_rows=wp_term_taxonomy_rows
             )
             sites.append(site)
         # 7. 返回
@@ -530,29 +539,33 @@ class OneNavSite():
         session.add(new_wp_posts_row)
         session.commit()
         post_id = new_wp_posts_row.ID
-        print("post_id: ", post_id)
+        # print("post_id: ", post_id)
         # 3. 更新 wp_posts 表数据中的 guid
         new_wp_posts_row.guid = "{}/sites/{}.html".format(domain, post_id)
         session.commit()
-        # 2. 生成 wp_postmeta 表数据
+        # 4. 生成 wp_postmeta 表数据
         new_wp_postmeta_rows = _generate_new_wp_postmeta_rows(post_id, self)
-        # 3. 生成 wp_term_relationships 表数据
-        new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, self)
-        # 4. 添加数据
+        # 5. 获取 wp_term_taxonomy 表数据
+        wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
+            WpTermTaxonomy.term_taxonomy_id.in_(self.favorite_ids)
+        ).all()
+        # 6. 生成 wp_term_relationships 表数据
+        new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows)
+        # 7. 添加数据
         for new_wp_postmeta_row in new_wp_postmeta_rows:
             session.add(new_wp_postmeta_row)
         for new_wp_term_relationships_row in new_wp_term_relationships_rows:
             session.add(new_wp_term_relationships_row)
-        # 5. 提交
+        # 8. 提交
         session.commit()
-        # 6. 更新 wp_term_taxonomy 表数据
+        # 9. 更新 wp_term_taxonomy 表数据
         for new_wp_term_relationships_row in new_wp_term_relationships_rows:
             session.query(WpTermTaxonomy).filter(
                 WpTermTaxonomy.term_taxonomy_id == new_wp_term_relationships_row.term_taxonomy_id
             ).update({
                 "count": WpTermTaxonomy.count + 1
             })
-        # 7. 提交
+        # 10. 提交
         session.commit()
 
     def update(self, post_id, session):
@@ -564,10 +577,14 @@ class OneNavSite():
         new_wp_posts_row = _generate_new_wp_posts_row(self)
         # 2. 生成 wp_postmeta 表数据
         new_wp_postmeta_rows = _generate_new_wp_postmeta_rows(post_id, self)
-        # 3. 生成 wp_term_relationships 表数据
-        new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, self)
-        # 4. 更新数据
-        # 4.1 更新 wp_posts 表数据
+        # 3. 获取 wp_term_taxonomy 表数据
+        wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
+            WpTermTaxonomy.term_taxonomy_id.in_(self.favorite_ids)
+        ).all()
+        # 4. 生成 wp_term_relationships 表数据
+        new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows)
+        # 5. 更新数据
+        # 5.1 更新 wp_posts 表数据
         session.query(WpPosts).filter(WpPosts.ID == post_id).update({
             "post_title": new_wp_posts_row.post_title,
             "post_content": new_wp_posts_row.post_content,
@@ -575,7 +592,7 @@ class OneNavSite():
             "post_modified": new_wp_posts_row.post_modified,
             "post_modified_gmt": new_wp_posts_row.post_modified_gmt
         })
-        # 4.2 更新 wp_postmeta 表数据
+        # 5.2 更新 wp_postmeta 表数据
         for new_wp_postmeta_row in new_wp_postmeta_rows:
             session.query(WpPostmeta).filter(
                 WpPostmeta.post_id == post_id,
@@ -583,38 +600,39 @@ class OneNavSite():
             ).update({
                 "meta_value": new_wp_postmeta_row.meta_value
             })
-        # 4.3 判断需要新增或删除的网址分类
+        # 5.3 判断需要新增或删除的网址分类
         wp_term_relationships_rows = session.query(WpTermRelationships).filter(
             WpTermRelationships.object_id == post_id
         ).all()
-        old_favorite_ids = [wp_term_relationships_row.term_id for wp_term_relationships_row in wp_term_relationships_rows]
-        new_favorite_ids = self.favorite_ids
-        add_favorite_ids = list(set(new_favorite_ids).difference(set(old_favorite_ids)))
-        del_favorite_ids = list(set(old_favorite_ids).difference(set(new_favorite_ids)))
-        # 4.4 更新 wp_term_relationships 和 wp_term_taxonomy 表数据
-        for add_favorite_id in add_favorite_ids:
+        old_term_taxonomy_ids = [wp_term_relationships_row.term_taxonomy_id for wp_term_relationships_row in wp_term_relationships_rows]
+        new_term_taxonomy_ids = [wp_term_taxonomy_row.term_taxonomy_id for wp_term_taxonomy_row in wp_term_taxonomy_rows]
+        term_taxonomy_ids_2_add = list(set(new_term_taxonomy_ids) - set(old_term_taxonomy_ids))
+        term_taxonomy_ids_2_delete = list(set(old_term_taxonomy_ids) - set(new_term_taxonomy_ids))
+        # 5.4 添加新的网址分类
+        for add_term_taxonomy_id in term_taxonomy_ids_2_add:
             new_wp_term_relationships_row = WpTermRelationships(
                 object_id=post_id,
-                term_taxonomy_id=add_favorite_id,
+                term_taxonomy_id=add_term_taxonomy_id,
                 term_order=0
             )
             session.add(new_wp_term_relationships_row)
             session.query(WpTermTaxonomy).filter(
-                WpTermTaxonomy.term_taxonomy_id == add_favorite_id
+                WpTermTaxonomy.term_taxonomy_id == add_term_taxonomy_id
             ).update({
                 "count": WpTermTaxonomy.count + 1
             })
-        for del_favorite_id in del_favorite_ids:
+        # 5.5 删除不需要的网址分类
+        for delete_term_taxonomy_id in term_taxonomy_ids_2_delete:
             session.query(WpTermRelationships).filter(
                 WpTermRelationships.object_id == post_id,
-                WpTermRelationships.term_taxonomy_id == del_favorite_id
+                WpTermRelationships.term_taxonomy_id == delete_term_taxonomy_id
             ).delete()
             session.query(WpTermTaxonomy).filter(
-                WpTermTaxonomy.term_taxonomy_id == del_favorite_id
+                WpTermTaxonomy.term_taxonomy_id == delete_term_taxonomy_id
             ).update({
                 "count": WpTermTaxonomy.count - 1
             })
-        # 5. 提交
+        # 6. 提交
         session.commit()
 
     def delete(self, post_id, session):

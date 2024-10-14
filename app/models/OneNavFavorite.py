@@ -15,13 +15,12 @@ from models.WpTermTaxonomy import WpTermTaxonomy
 from models.WpTermRelationships import WpTermRelationships
 
 
-def _generate_class_from_rows(wp_term_row, wp_termmeta_rows, wp_term_taxonomy_row, wp_term_relationships_row):
+def _generate_class_from_rows(wp_term_row, wp_termmeta_rows, wp_term_taxonomy_row):
     """
     函数说明: 通过数据库查询结果生成对象
     :param wp_term_row: wp_terms 表查询结果
     :param wp_termmeta_rows: wp_termmeta 表查询结果
     :param wp_term_taxonomy_row: wp_term_taxonomy 表查询结果
-    :param wp_term_relationships_row: wp_term_relationships 表查询结果
     """
     # 1. 名称
     name = wp_term_row.name
@@ -73,7 +72,11 @@ def _generate_class_from_rows(wp_term_row, wp_termmeta_rows, wp_term_taxonomy_ro
         if wp_termmeta_row.meta_key == "columns":
             columns = wp_termmeta_row.meta_value
             break
-    # 12. 生成对象
+    # 12. 插入表后的 term_id
+    _term_id = wp_term_row.term_id
+    # 13. 插入表后的 term_taxonomy_id
+    _term_taxonomy_id = wp_term_taxonomy_row.term_taxonomy_id
+    # 14. 生成对象
     favorite = OneNavFavorite(
         name=name,
         slug=slug,
@@ -86,9 +89,10 @@ def _generate_class_from_rows(wp_term_row, wp_termmeta_rows, wp_term_taxonomy_ro
         card_mode=card_mode,
         columns_type=columns_type,
         columns=columns,
-        _term_id=wp_term_row.term_id
+        _term_id=_term_id,
+        _term_taxonomy_id=_term_taxonomy_id
     )
-    # 13. 返回
+    # 15. 返回
     return favorite
 
 
@@ -159,22 +163,11 @@ class OneNavFavorite():
         wp_term_taxonomy_row = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == term_id).first()
         if not wp_term_taxonomy_row:
             return None
-        # 4. 通过 term_id 查询 wp_term_relationships 表
-        wp_term_relationships_row = session.query(WpTermRelationships).filter(
-            WpTermRelationships.term_taxonomy_id == wp_term_taxonomy_row.term_taxonomy_id
-        ).first()
-        if not wp_term_relationships_row:
-            return None
-        # 5. 生成网址分类对象
+        # 4. 生成网址分类对象
         favorite = _generate_class_from_rows(
             wp_term_row=wp_term_row,
             wp_termmeta_rows=wp_termmeta_rows,
-            wp_term_taxonomy_row=wp_term_taxonomy_row,
-            wp_term_relationships_row=wp_term_relationships_row
+            wp_term_taxonomy_row=wp_term_taxonomy_row
         )
-        # 6. 返回
+        # 5. 返回
         return favorite
-
-
-
-

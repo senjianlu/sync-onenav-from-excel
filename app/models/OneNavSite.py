@@ -12,6 +12,7 @@
 import time
 import urllib.parse
 from datetime import datetime, UTC
+from sqlalchemy import or_
 
 from models.WpPosts import WpPosts
 from models.WpPostmeta import WpPostmeta
@@ -30,9 +31,9 @@ def _generate_class_from_rows(sync_site_id, wp_post_row, wp_postmeta_rows, wp_te
     :param wp_term_taxonomy_rows: wp_term_taxonomy 表数据列表
     """
     # 1. 网址分类 ID 列表
-    favorite_ids = [wp_term_taxonomy_row.term_id for wp_term_taxonomy_row in wp_term_taxonomy_rows]
+    favorite_ids = [wp_term_taxonomy_row.term_id for wp_term_taxonomy_row in wp_term_taxonomy_rows if wp_term_taxonomy_row.taxonomy == "favorites"]
     # 2. 网址标签 ID 列表
-    tag_ids = []
+    tag_ids = [wp_term_taxonomy_row.term_id for wp_term_taxonomy_row in wp_term_taxonomy_rows if wp_term_taxonomy_row.taxonomy == "sitetag"]
     # 3. 标题
     title = wp_post_row.post_title
     # 4. 内容
@@ -129,13 +130,13 @@ def _generate_new_wp_posts_row(site):
         post_date=datetime.now(),
         post_date_gmt=datetime.now(UTC),
         post_content=site.content,
-        post_title=site.title,
+        post_title=str(site.title),
         post_excerpt="",
         post_status="publish",
         comment_status="closed",
         ping_status="closed",
         post_password="",
-        post_name=urllib.parse.quote(site.title),
+        post_name=urllib.parse.quote(str(site.title)),
         to_ping="",
         pinged="",
         post_modified=datetime.now(),
@@ -355,7 +356,13 @@ def _generate_new_wp_postmeta_rows(post_id, site):
         meta_key="_wechat_qr",
         meta_value=site.wechat_qr_pic_url
     ))
-    # 3. 返回
+    # 3. _sync_site_id
+    new_wp_postmeta_rows.append(WpPostmeta(
+        post_id=post_id,
+        meta_key="_sync_site_id",
+        meta_value=site._sync_site_id
+    ))
+    # 4. 返回
     return new_wp_postmeta_rows
 
 def _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows):
@@ -524,7 +531,7 @@ class OneNavSite():
                 wp_term_taxonomy_rows=wp_term_taxonomy_rows
             )
             sites.append(site)
-        # 7. 返回
+        # 8. 返回
         return sites
 
     def insert(self, domain, session):
@@ -547,7 +554,10 @@ class OneNavSite():
         new_wp_postmeta_rows = _generate_new_wp_postmeta_rows(post_id, self)
         # 5. 获取 wp_term_taxonomy 表数据
         wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
-            WpTermTaxonomy.term_taxonomy_id.in_(self.favorite_ids)
+            or_(
+                WpTermTaxonomy.term_id.in_(self.favorite_ids),
+                WpTermTaxonomy.term_id.in_(self.tag_ids)
+            )
         ).all()
         # 6. 生成 wp_term_relationships 表数据
         new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows)
@@ -579,7 +589,7 @@ class OneNavSite():
         new_wp_postmeta_rows = _generate_new_wp_postmeta_rows(post_id, self)
         # 3. 获取 wp_term_taxonomy 表数据
         wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
-            WpTermTaxonomy.term_taxonomy_id.in_(self.favorite_ids)
+            WpTermTaxonomy.term_id.in_(self.favorite_ids)
         ).all()
         # 4. 生成 wp_term_relationships 表数据
         new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows)
@@ -635,11 +645,12 @@ class OneNavSite():
         # 6. 提交
         session.commit()
 
-    def delete(self, post_id, session):
+    def delete(self, session):
         """
         函数说明: 删除网址
         :param session: 数据库会话
         """
+        post_id = self._post_id
         # 1. 删除 wp_posts 表数据
         session.query(WpPosts).filter(WpPosts.ID == post_id).delete()
         # 2. 删除 wp_postmeta 表数据

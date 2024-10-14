@@ -12,6 +12,7 @@
 import copy
 
 from models.OneNavSite import OneNavSite
+from onenav import site as onenav_site
 
 
 def _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update):
@@ -32,7 +33,7 @@ def _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update):
         print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
     print("-"*40)
     # 3. 需要更新的网址列表
-    print("⚠️需要更新的网址共有 {} 条".format(len(sites_to_update)))
+    print("🔁 需要更新的网址共有 {} 条".format(len(sites_to_update)))
     for site in sites_to_update:
         print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
     print("-"*40)
@@ -99,14 +100,14 @@ def _do_part_sync(domain, session, sites):
     # 5. 执行操作
     # 5.1 新增网址
     for site in sites_to_add:
-        site.insert(domain, session)
+        onenav_site.insert(site, domain, session)
     # 5.2 删除网址
     for site in sites_to_delete:
-        site.delete(session)
-    # 5.3 更新网址
-    for site in sites_to_update:
-        site.update(domain, session)
-    # 6. 保险起见，提交事务
+        onenav_site.delete(site, session)
+    # # 5.3 更新网址
+    # for site in sites_to_update:
+    #     site.update(domain, session)
+    # 6. 保险起见提交事务
     session.commit()
 
 def do_sync(sync_mode, domain, session, sites):
@@ -126,5 +127,7 @@ def do_sync(sync_mode, domain, session, sites):
         print("部分同步模式启动！\n" + "-"*40)
         _do_part_sync(domain, session, sites)
         print("部分同步完成！\n" + "="*50)
-    # 3. 同步完成
-    print("同步完成")
+    # 3. 其他情况
+    else:
+        print("同步模式错误！程序将不执行任何操作！\n" + "="*50)
+        return

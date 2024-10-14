@@ -12,7 +12,11 @@ file_name = "OneNav 导航站数据集.xlsx"
 
 # 同步模式
 [sync]
-# 增量或全量
-# incremental: 仅添加新的网址或更新已有网址的信息，不会删除任何网址（推荐）
+# part: 仅添加 wp_postmeta 中有 _sync_site_id 标记的网址（推荐）
 # full: 强制保持数据一致，任何在 Excel 中没有的网址都会被删除（不推荐）
-mode = "incremental"
+mode = "part"
+
+# 导航站信息
+[onenav]
+# 域名
+domain = "https://steam.cash"

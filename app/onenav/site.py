@@ -211,9 +211,13 @@ def insert(site, domain, session):
             _print_operate_info(site, "插入", False, "没有对应的网址分类")
             return None
     # 1.2 是否有对应的网址标签
-    # todo
+    for term_id in site.tag_ids:
+        tag = OneNavTag.select(term_id, session)
+        if not tag:
+            _print_operate_info(site, "插入", False, "没有对应的网址标签")
+            return None
     # 2. 调用对象的插入方法
-    site.insert(session, domain)
+    site.insert(domain, session)
     # 3. 保险起见提交事务
     session.commit()
     # 4. 打印提示信息
@@ -243,14 +247,14 @@ def update(site, post_id, session):
     # 5. 返回
     return site
 
-def delete(site, post_id, session):
+def delete(site, session):
     """
     函数说明: 删除网址数据
     :param site: 网址对象
     :param session: 数据库会话
     """
     # 1. 调用对象的删除方法
-    site.delete(session, post_id)
+    site.delete(session)
     # 2. 保险起见提交事务
     session.commit()
     # 3. 打印提示信息

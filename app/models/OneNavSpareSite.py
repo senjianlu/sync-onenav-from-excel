@@ -43,14 +43,13 @@ class OneNavSpareSite():
         #     i:2;a:3:{s:10:"spare_name";s:5:"Baidu";s:9:"spare_url";s:17:"https://baidu.com";s:10:"spare_note";s:31:"这是 Baidu 的跳转链接。";}
         # }
         # 拼接字符串
-        result = "a:" + str(len(spare_sites)) + ":{"
-        for i, spare_site in enumerate(spare_sites):
-            result += "i:" + str(i) + ";a:3:{"
-            result += "s:10:\"spare_name\";s:" + str(len(spare_site.name)) + ":\"" + spare_site.name + "\";"
-            result += "s:9:\"spare_url\";s:" + str(len(spare_site.url)) + ":\"" + spare_site.url + "\";"
-            result += "s:10:\"spare_note\";s:" + str(len(spare_site.note)) + ":\"" + spare_site.note + "\";"
-            result += "}"
-        result += "}"
+        result = phpserialize.dumps({
+            i: {
+                "spare_name": spare_site.name,
+                "spare_url": spare_site.url,
+                "spare_note": spare_site.note
+            } for i, spare_site in enumerate(spare_sites)
+        })
         # 返回结果
         return result
 

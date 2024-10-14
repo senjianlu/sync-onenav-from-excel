@@ -14,6 +14,8 @@ from db import get_db_engine, get_db_session
 from excel import get_file_path, load_data
 from onenav.site import generate_sites_from_excel_data
 from sync import do_sync
+from onenav.favorite import check_all as favorite_check_all
+from onenav.tag import check_all as tag_check_all
 
 
 def check_config():
@@ -105,12 +107,26 @@ def main():
     data = load_data(file_path)
     # 7. 使用 Excel 表中的数据创建 ORM 对象
     sites = generate_sites_from_excel_data(data)
-    # 8. 获取同步模式和导航站点域名
+    # 8. 检查所涉及的网址分类和网址标签是否都存在
+    all_favorite_ids = []
+    all_tag_ids = []
+    for site in sites:
+        all_favorite_ids.extend(site.favorite_ids)
+        all_tag_ids.extend(site.tag_ids)
+    all_favorite_ids = list(set(all_favorite_ids))
+    all_tag_ids = list(set(all_tag_ids))
+    if favorite_check_all(all_favorite_ids, session) and tag_check_all(all_tag_ids, session):
+        print("涉及的网址分类和网址标签检查通过，都存在！\n" + "="*50)
+    else:
+        session.close()
+        print("涉及的网址分类和网址标签检查失败，请检查站点中的网址分类和网址标签是否存在和正确！")
+        return
+    # 9. 获取同步模式和导航站点域名
     sync_mode = CONFIG["sync"]["mode"]
     domain = CONFIG["onenav"]["domain"].rstrip("/")
-    # 9. 同步到数据库中
+    # 10. 同步到数据库中
     do_sync(sync_mode, domain, session, sites)
-    # 10. 关闭数据库连接
+    # 11. 关闭数据库连接
     session.close()
 
 

@@ -9,6 +9,8 @@
 # @DESCRIPTION: 测试模块
 
 
+import urllib.parse
+
 from config import CONFIG
 from db import get_db_engine, get_db_session
 from onenav import favorite as one_nav_favorite
@@ -68,6 +70,14 @@ def test_06(session):
     is_pass = one_nav_tag.check_all([1, 10], session)
     print(is_pass)
 
+def test_07(session):
+    """
+    函数说明: 测试 url encode 数字、字母和汉字
+    """
+    url = 360
+    print(urllib.parse.quote(url))
+
+
 if __name__ == "__main__":
     # 1. 建立书库库连接
     mysql_config = CONFIG["mysql"]
@@ -93,7 +103,8 @@ if __name__ == "__main__":
         # test_03(session)
         # test_04()
         # test_05(session)
-        test_06(session)
+        # test_06(session)
+        test_07(session)
     except Exception as e:
         print(e)
     finally:

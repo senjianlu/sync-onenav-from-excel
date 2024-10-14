@@ -15,7 +15,7 @@ from models.OneNavSite import OneNavSite
 from onenav import site as onenav_site
 
 
-def _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update):
+def _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update, sites_need_update_fields_dict):
     """
     函数说明: 打印下一步操作信息
     :param sites_to_add: 需要新增的网址列表
@@ -23,22 +23,23 @@ def _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update):
     :param sites_to_update: 需要更新的网址列表
     """
     # 1. 需要新增的网址列表
-    print("✅ 需要新增的网址共有 {} 条".format(len(sites_to_add)))
+    print("⭐ 需要新增的网址共有 {} 条".format(len(sites_to_add)))
     for site in sites_to_add:
         print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
     print("-"*40)
     # 2. 需要删除的网址列表
-    print("❌ 需要删除的网址共有 {} 条".format(len(sites_to_delete)))
+    print("🗑️ 需要删除的网址共有 {} 条".format(len(sites_to_delete)))
     for site in sites_to_delete:
         print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
     print("-"*40)
     # 3. 需要更新的网址列表
     print("🔁 需要更新的网址共有 {} 条".format(len(sites_to_update)))
     for site in sites_to_update:
-        print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
+        need_update_fields = sites_need_update_fields_dict[site._sync_site_id]
+        print("{} {}: {} ➡️ {}".format(site._sync_site_id, site.title, site.link, str(need_update_fields)))
     print("-"*40)
 
-def _compare_sites(excel_sites_dict, db_sites_dict) -> (list, list, list):
+def _compare_sites(excel_sites_dict, db_sites_dict) -> (list, list, list, dict):
     """
     函数说明: 对比网址列表
     :param excel_sites: Excel 中的网址列表
@@ -48,6 +49,7 @@ def _compare_sites(excel_sites_dict, db_sites_dict) -> (list, list, list):
     sites_to_add = []
     sites_to_delete = []
     sites_to_update = []
+    sites_need_update_fields_dict = {}
     # 1. 筛选出在 Excel 中存在但在数据库中不存在的网址
     for sync_site_id in excel_sites_dict:
         if sync_site_id not in db_sites_dict:
@@ -61,10 +63,14 @@ def _compare_sites(excel_sites_dict, db_sites_dict) -> (list, list, list):
         if sync_site_id in db_sites_dict:
             excel_site = excel_sites_dict[sync_site_id]
             db_site = db_sites_dict[sync_site_id]
-            if not excel_site.equals(db_site):
+            is_equal, need_update_fields_dict = onenav_site.compare(excel_site, db_site)
+            if not is_equal:
+                # 获取数据库中的 post_id
+                excel_site._post_id = db_site._post_id
                 sites_to_update.append(excel_site)
+                sites_need_update_fields_dict[excel_site._sync_site_id] = need_update_fields_dict
     # 4. 返回
-    return sites_to_add, sites_to_delete, sites_to_update
+    return sites_to_add, sites_to_delete, sites_to_update, sites_need_update_fields_dict
 
 def _do_full_sync(domain, session, sites):
     """
@@ -94,9 +100,9 @@ def _do_part_sync(domain, session, sites):
     for site in db_sites:
         db_sites_dict[site._sync_site_id] = site
     # 3. 对比两个字典，生成需要新增、删除、更新的网址列表
-    sites_to_add, sites_to_delete, sites_to_update = _compare_sites(excel_sites_dict, db_sites_dict)
+    sites_to_add, sites_to_delete, sites_to_update, sites_need_update_fields_dict = _compare_sites(excel_sites_dict, db_sites_dict)
     # 4. 打印信息
-    _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update)
+    _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update, sites_need_update_fields_dict)
     # 5. 执行操作
     # 5.1 新增网址
     for site in sites_to_add:
@@ -104,9 +110,9 @@ def _do_part_sync(domain, session, sites):
     # 5.2 删除网址
     for site in sites_to_delete:
         onenav_site.delete(site, session)
-    # # 5.3 更新网址
-    # for site in sites_to_update:
-    #     site.update(domain, session)
+    # 5.3 更新网址
+    for site in sites_to_update:
+        onenav_site.update(site, session)
     # 6. 保险起见提交事务
     session.commit()
 

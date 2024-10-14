@@ -12,6 +12,7 @@
 from models.OneNavSite import OneNavSite
 from models.OneNavSpareSite import OneNavSpareSite
 from models.OneNavFavorite import OneNavFavorite
+from models.OneNavTag import OneNavTag
 
 
 def _print_operate_info(site, operate, is_success=True, detail=None):
@@ -225,7 +226,7 @@ def insert(site, domain, session):
     # 5. 返回
     return site
 
-def update(site, post_id, session):
+def update(site, session):
     """
     函数说明: 更新网址数据
     :param site: 网址对象
@@ -238,8 +239,14 @@ def update(site, post_id, session):
         if not favorite:
             _print_operate_info(site, "更新", False, "没有对应的网址分类")
             return None
+    # 1.2 是否有对应的网址标签
+    for term_id in site.tag_ids:
+        tag = OneNavTag.select(term_id, session)
+        if not tag:
+            _print_operate_info(site, "更新", False, "没有对应的网址标签")
+            return None
     # 2. 调用对象的更新方法
-    site.update(session, post_id)
+    site.update(session)
     # 3. 保险起见提交事务
     session.commit()
     # 4. 打印提示信息
@@ -261,3 +268,21 @@ def delete(site, session):
     _print_operate_info(site, "删除")
     # 4. 返回
     return site
+
+def compare(excel_site, db_site):
+    """
+    函数说明: 对比两个网址对象是否相等
+    :param excel_site: Excel 网址对象
+    :param db_site: 数据库网址对象
+    """
+    # 1. 对比网址对象
+    is_equal, not_equal_fields_dict = excel_site.equals(db_site)
+    # 2. 生产需要更新的字段
+    need_update_fields_dict = {}
+    if not is_equal:
+        for field in not_equal_fields_dict:
+            need_update_fields_dict[field] = {}
+            need_update_fields_dict[field]["from"] = not_equal_fields_dict[field]["db"]
+            need_update_fields_dict[field]["to"] = not_equal_fields_dict[field]["excel"]
+    # 2. 返回
+    return is_equal, need_update_fields_dict

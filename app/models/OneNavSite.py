@@ -578,18 +578,22 @@ class OneNavSite():
         # 10. 提交
         session.commit()
 
-    def update(self, post_id, session):
+    def update(self, session):
         """
         函数说明: 更新网址
         :param session: 数据库会话
         """
+        post_id = self._post_id
         # 1. 生成 wp_posts 表数据
         new_wp_posts_row = _generate_new_wp_posts_row(self)
         # 2. 生成 wp_postmeta 表数据
         new_wp_postmeta_rows = _generate_new_wp_postmeta_rows(post_id, self)
         # 3. 获取 wp_term_taxonomy 表数据
         wp_term_taxonomy_rows = session.query(WpTermTaxonomy).filter(
-            WpTermTaxonomy.term_id.in_(self.favorite_ids)
+            or_(
+                WpTermTaxonomy.term_id.in_(self.favorite_ids),
+                WpTermTaxonomy.term_id.in_(self.tag_ids)
+            )
         ).all()
         # 4. 生成 wp_term_relationships 表数据
         new_wp_term_relationships_rows = _generate_new_wp_term_relationships_rows(post_id, wp_term_taxonomy_rows)
@@ -676,18 +680,86 @@ class OneNavSite():
         函数说明: 判断两个网址对象是否相等
         :param site: 网址对象
         """
-        if (self.favorite_ids != site.favorite_ids or
-            self.tag_ids != site.tag_ids or
-            self.title != site.title or
-            self.content != site.content or
-            self.link != site.link or
-            OneNavSpareSite.convert_to_str(self.spare_links) != OneNavSpareSite.convert_to_str(site.spare_links) or
-            self.sescribe != site.sescribe or
-            self.language != site.language or
-            self.country != site.country or
-            self.order != site.order or
-            self.thumbnail_pic_url != site.thumbnail_pic_url or
-            self.preview_pic_url != site.preview_pic_url or
-            self.wechat_qr_pic_url != site.wechat_qr_pic_url):
-            return False
-        return True
+        not_equal_fields_dict = {}
+        # 1. 网址分类 ID 列表，使用列表相比的方式判断是否相等
+        if (set(self.favorite_ids) != set(site.favorite_ids)):
+            not_equal_fields_dict["favorite_ids"] = {
+                "excel": self.favorite_ids,
+                "db": site.favorite_ids
+            }
+        # 2. 网址标签 ID 列表，使用列表相比的方式判断是否相等
+        if (set(self.tag_ids) != set(site.tag_ids)):
+            not_equal_fields_dict["tag_ids"] = {
+                "excel": self.tag_ids,
+                "db": site.tag_ids
+            }
+        # 3. 标题
+        if (str(self.title) != str(site.title)):
+            not_equal_fields_dict["title"] = {
+                "excel": str(self.title),
+                "db": str(site.title)
+            }
+        # 4. 内容
+        if (str(self.content) != str(site.content)):
+            not_equal_fields_dict["content"] = {
+                "excel": str(self.content),
+                "db": str(site.content)
+            }
+        # 5. 链接
+        if (str(self.link) != str(site.link)):
+            not_equal_fields_dict["link"] = {
+                "excel": str(self.link),
+                "db": str(site.link)
+            }
+        # 6. 备用链接地址（其他站点）
+        if (OneNavSpareSite.convert_to_str(self.spare_links) != OneNavSpareSite.convert_to_str(site.spare_links)):
+            not_equal_fields_dict["spare_links"] = {
+                "excel": OneNavSpareSite.convert_to_str(self.spare_links),
+                "db": OneNavSpareSite.convert_to_str(site.spare_links)
+            }
+        # 7. 一句话描述（简介）
+        if (str(self.sescribe) != str(site.sescribe)):
+            not_equal_fields_dict["sescribe"] = {
+                "excel": str(self.sescribe),
+                "db": str(site.sescribe)
+            }
+        # 8. 站点语言
+        if (str(self.language) != str(site.language)):
+            not_equal_fields_dict["language"] = {
+                "excel": str(self.language),
+                "db": str(site.language)
+            }
+        # 9. 站点所在国家或地区
+        if (str(self.country) != str(site.country)):
+            not_equal_fields_dict["country"] = {
+                "excel": str(self.country),
+                "db": str(site.country)
+            }
+        # 10. 排序
+        if (str(self.order) != str(site.order)):
+            not_equal_fields_dict["order"] = {
+                "excel": self.order,
+                "db": site.order
+            }
+        # 11. LOGO，标志的图片链接
+        if (str(self.thumbnail_pic_url) != str(site.thumbnail_pic_url)):
+            not_equal_fields_dict["thumbnail_pic_url"] = {
+                "excel": str(self.thumbnail_pic_url),
+                "db": str(site.thumbnail_pic_url)
+            }
+        # 12. 网站预览截图的图片链接
+        if (str(self.preview_pic_url) != str(site.preview_pic_url)):
+            not_equal_fields_dict["preview_pic_url"] = {
+                "excel": str(self.preview_pic_url),
+                "db": str(site.preview_pic_url)
+            }
+        # 13. 公众号二维码的图片链接
+        if (str(self.wechat_qr_pic_url) != str(site.wechat_qr_pic_url)):
+            not_equal_fields_dict["wechat_qr_pic_url"] = {
+                "excel": str(self.wechat_qr_pic_url),
+                "db": str(site.wechat_qr_pic_url)
+            }
+        # 14. 返回
+        if not_equal_fields_dict:
+            return False, not_equal_fields_dict
+        return True, None

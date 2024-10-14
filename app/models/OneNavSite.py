@@ -19,7 +19,6 @@ from models.WpPostmeta import WpPostmeta
 from models.WpTermTaxonomy import WpTermTaxonomy
 from models.WpTermRelationships import WpTermRelationships
 from models.OneNavSpareSite import OneNavSpareSite
-from models.OneNavFavorite import OneNavFavorite
 
 
 def _generate_class_from_rows(sync_site_id, wp_post_row, wp_postmeta_rows, wp_term_taxonomy_rows):
@@ -608,12 +607,16 @@ class OneNavSite():
         })
         # 5.2 更新 wp_postmeta 表数据
         for new_wp_postmeta_row in new_wp_postmeta_rows:
-            session.query(WpPostmeta).filter(
-                WpPostmeta.post_id == post_id,
-                WpPostmeta.meta_key == new_wp_postmeta_row.meta_key
-            ).update({
-                "meta_value": new_wp_postmeta_row.meta_value
-            })
+            # 仅更新 Excel 中有的字段
+            if new_wp_postmeta_row.meta_key in ["_sites_link", "_spare_sites_link", "_sites_sescribe",
+                                                "_sites_language", "_sites_country", "_sites_order",
+                                                "_thumbnail", "_sites_preview", "_wechat_qr"]:
+                session.query(WpPostmeta).filter(
+                    WpPostmeta.post_id == post_id,
+                    WpPostmeta.meta_key == new_wp_postmeta_row.meta_key
+                ).update({
+                    "meta_value": new_wp_postmeta_row.meta_value
+                })
         # 5.3 判断需要新增或删除的网址分类
         wp_term_relationships_rows = session.query(WpTermRelationships).filter(
             WpTermRelationships.object_id == post_id

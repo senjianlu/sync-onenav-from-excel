@@ -28,7 +28,7 @@ def _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update, sites_
         print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
     print("-"*40)
     # 2. 需要删除的网址列表
-    print("🗑️ 需要删除的网址共有 {} 条".format(len(sites_to_delete)))
+    print("🗑️需要删除的网址共有 {} 条".format(len(sites_to_delete)))
     for site in sites_to_delete:
         print("{} {}: {}".format(site._sync_site_id, site.title, site.link))
     print("-"*40)

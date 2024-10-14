@@ -103,17 +103,25 @@ def _do_part_sync(domain, session, sites):
     sites_to_add, sites_to_delete, sites_to_update, sites_need_update_fields_dict = _compare_sites(excel_sites_dict, db_sites_dict)
     # 4. 打印信息
     _print_next_step_info(sites_to_add, sites_to_delete, sites_to_update, sites_need_update_fields_dict)
-    # 5. 执行操作
-    # 5.1 新增网址
+    # 5. 手动确认
+    print("检查以上操作是否正确，确认完成后请告知我是否继续？(y/n)")
+    confirm = input()
+    if confirm.lower() != "y":
+        print("操作已取消！\n" + "-"*40)
+        return
+    print("-"*40)
+    print("开始执行操作......")
+    # 6. 执行操作
+    # 6.1 新增网址
     for site in sites_to_add:
         onenav_site.insert(site, domain, session)
-    # 5.2 删除网址
+    # 6.2 删除网址
     for site in sites_to_delete:
         onenav_site.delete(site, session)
-    # 5.3 更新网址
+    # 6.3 更新网址
     for site in sites_to_update:
         onenav_site.update(site, session)
-    # 6. 保险起见提交事务
+    # 7. 保险起见提交事务
     session.commit()
 
 def do_sync(sync_mode, domain, session, sites):

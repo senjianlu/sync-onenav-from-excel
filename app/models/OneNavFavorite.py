@@ -6,7 +6,7 @@
 # @DATE: 2024/10/13
 # @TIME: 20:21:55
 #
-# @DESCRIPTION: 网址分类表模型
+# @DESCRIPTION: 网址分类模型
 
 
 from models.WpTerms import WpTerms
@@ -29,7 +29,7 @@ def _generate_class_from_rows(wp_term_row, wp_termmeta_rows, wp_term_taxonomy_ro
     # 3. 父级分类目录 ID
     parent = wp_term_taxonomy_row.parent
     # 4. 描述
-    description = wp_term_row.description
+    description = wp_term_taxonomy_row.description
     # 5. 排序
     order = None
     for wp_termmeta_row in wp_termmeta_rows:

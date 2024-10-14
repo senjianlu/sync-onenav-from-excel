@@ -121,17 +121,17 @@ def _get_sites(site_rows, site_id_in_excel_2_spare_sites):
             favorite_ids = []
         else:
             if "," in str(site_row[4]):
-                favorite_ids = [str(favorite_id).strip() for favorite_id in site_row[4].split(",")]
+                favorite_ids = [int(str(favorite_id).strip()) for favorite_id in site_row[4].split(",")]
             else:
-                favorite_ids = [str(site_row[4])]
+                favorite_ids = [int(str(site_row[4]))]
         # 1.4 网站标签 ID 列表
         if not site_row[5]:
             tag_ids = []
         else:
             if "," in str(site_row[5]):
-                tag_ids = [str(tag_id).strip() for tag_id in site_row[5].split(",")]
+                tag_ids = [int(str(tag_id).strip()) for tag_id in site_row[5].split(",")]
             else:
-                tag_ids = [str(site_row[5])]
+                tag_ids = [int(str(site_row[5]))]
         # 1.5 获取备用网站字符串
         site_id_in_excel = site_row[1]
         spare_sites = site_id_in_excel_2_spare_sites.get(site_id_in_excel, "")

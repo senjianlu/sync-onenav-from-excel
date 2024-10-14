@@ -70,17 +70,29 @@ class OneNavSpareSite():
         try:
             spare_sites_str_bytes = spare_sites_str.encode("utf-8")
             temp_dict_with_byte = phpserialize.loads(spare_sites_str_bytes)
+            # 将 sitetag_meta_dict 的所有 Byte 键值对转为字符串类型
+            temp_dict = {}
+            for key, value in temp_dict_with_byte.items():
+                new_key = key.decode("utf-8") if isinstance(key, bytes) else key
+                temp_dict[new_key] = {}
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        new_sub_key = sub_key.decode("utf-8") if isinstance(sub_key, bytes) else sub_key
+                        new_sub_value = sub_value.decode("utf-8") if isinstance(sub_value, bytes) else sub_value
+                        temp_dict[new_key][new_sub_key] = new_sub_value
+                else:
+                    temp_dict[new_key] = value.decode("utf-8") if isinstance(value, bytes) else value
         except Exception as e:
             print("备用网址字符串转换出错！")
             raise e
         # 2. 解析字典
         spare_sites = []
-        for no in temp_dict_with_byte:
+        for no in temp_dict:
             # 生成备用网址对象
             spare_sites.append(OneNavSpareSite(
-                name=temp_dict_with_byte[no]["spare_name"] if "spare_name" in temp_dict_with_byte[no] else "",
-                url=temp_dict_with_byte[no]["spare_url"] if "spare_url" in temp_dict_with_byte[no] else "",
-                note=temp_dict_with_byte[no]["spare_note"] if "spare_note" in temp_dict_with_byte[no] else ""
+                name=temp_dict[no]["spare_name"] if "spare_name" in temp_dict[no] else "",
+                url=temp_dict[no]["spare_url"] if "spare_url" in temp_dict[no] else "",
+                note=temp_dict[no]["spare_note"] if "spare_note" in temp_dict[no] else ""
             ))
         # 3. 返回结果
         return spare_sites

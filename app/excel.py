@@ -53,7 +53,7 @@ def load_data(file_path):
         "site_rows": site_rows,
         "spare_site_rows": spare_site_rows
     }
-    print("Excel 中网址表总共有 {} 条数据".format(len(site_rows)))
+    print("Excel 中网址表总共有 {} 条数据（需要同步和不需要同步的都包含在内）".format(len(site_rows)))
     print("Excel 中备用链接地址（其他站点）表总共有 {} 条数据".format(len(spare_site_rows)))
     print("="*50)
     return data

@@ -10,10 +10,10 @@
 ### 一、该脚本只对来源是 Excel 的网址进行同步
 实现区分来源的方法是：首次将 Excel 表格中的网址导入 OneNav 时，会在 `wp_postmeta` 表中添加 `meta_key` 为 `_sync_site_id` 的记录，而它的值 `meta_value` 为 Excel 表格中设定的 `自定义 ID`。  
 这些数据后续就会被判断为来源于 Excel 表格。  
-**任何你手动添加的、不存在 `_sync_site_id` 数据的网址，因此都不会被修改到**。  
+**任何你手动添加的、不存在 `_sync_site_id` 数据的网址，都不会被修改到**。  
 
 ### 二、⭐ 请在执行脚本前备份整站
-虽然我已经尽量缩小了影响范围，脚本仅会操作 `wp_posts`、`wp_postmeta`、`wp_term_taxonomy` 和 `wp_term_relationships` 表，但是仍然无法保证 100% 不会出现预想外的情况而损坏你的站点数据。
+虽然我已经尽量缩小了影响范围，脚本仅会操作 `wp_posts`、`wp_postmeta`、`wp_term_taxonomy` 和 `wp_term_relationships` 表，但是仍然无法保证 100% 不会出现预想外的情况而损坏你的站点数据。  
 **你可以在 `工具` -> `导出` 处执行下载备份的操作**。  
 
 ### 三、有问题和建议请提交 Issue
@@ -39,7 +39,8 @@ git clone https://github.com/senjianlu/sync-onenav-from-excel.git
 # 进入项目目录
 cd sync-onenav-from-excel
 # 安装 Python 依赖
-pip install -r requirements.txt
+pip3 install -r requirements.txt
+# pip install -r requirements.txt
 ```
 > 如果你存在网络问题，那么可以切换下源，具体可以参考：[pip 使用国内镜像源](https://www.runoob.com/w3cnote/pip-cn-mirror.html)
 

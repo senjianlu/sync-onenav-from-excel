@@ -107,6 +107,7 @@ python3 main.py
     - ⬜ 修改 (update)
     - ✅ 查询 (select)
     - ⬜ 展示 (show)
+- ⬜ 将结果更新回 Excel 表中
 
 
 ## 更多文章

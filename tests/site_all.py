@@ -13,7 +13,29 @@ import sys
 sys.path.append("../app")
 
 from config import CONFIG
+from db import get_db_engine, get_db_session
 from site_case import excel as site_excel
+from site_case import db as site_db
+
+
+def _connect_db():
+    """
+    连接数据库
+    """
+    # 1. 连接数据库
+    mysql_host, mysql_port, mysql_username, mysql_password, mysql_database = (
+        CONFIG["mysql"]["host"],
+        CONFIG["mysql"]["port"],
+        CONFIG["mysql"]["username"],
+        CONFIG["mysql"]["password"],
+        CONFIG["mysql"]["database"]
+    )
+    # 2. 获取数据库引擎
+    engine = get_db_engine(mysql_host, mysql_port, mysql_username, mysql_password, mysql_database)
+    # 3. 获取数据库会话
+    session = get_db_session(engine)
+    # 4. 返回
+    return session
 
 
 def test_excel_load():
@@ -47,3 +69,18 @@ def test_excel_convert():
         site_excel.test_convert(data)
     except Exception as e:
         raise e
+
+def test_db_select():
+    """
+    测试数据库查询
+    """
+    # 1. 连接数据库
+    session = _connect_db()
+    # 2. 测试
+    try:
+        site_db.test_select(session)
+    except Exception as e:
+        raise e
+    finally:
+        # 3. 关闭数据库
+        session.close()

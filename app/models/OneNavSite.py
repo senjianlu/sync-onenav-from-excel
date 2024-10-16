@@ -608,9 +608,9 @@ class OneNavSite():
         })
         # 5.2 更新 wp_postmeta 表数据
         for new_wp_postmeta_row in new_wp_postmeta_rows:
-            # 仅更新 Excel 中有的字段
+            # 仅更新 Excel 中有的字段（除了可能被更新了的 _sites_order 排序字段）
             if new_wp_postmeta_row.meta_key in ["_sites_link", "_spare_sites_link", "_sites_sescribe",
-                                                "_sites_language", "_sites_country", "_sites_order",
+                                                "_sites_language", "_sites_country",
                                                 "_thumbnail", "_sites_preview", "_wechat_qr"]:
                 session.query(WpPostmeta).filter(
                     WpPostmeta.post_id == post_id,

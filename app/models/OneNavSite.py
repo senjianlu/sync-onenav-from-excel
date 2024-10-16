@@ -739,12 +739,12 @@ class OneNavSite():
                 "excel": str(self.country),
                 "db": str(site.country)
             }
-        # 10. 排序
-        if (str(self.order) != str(site.order)):
-            not_equal_fields_dict["order"] = {
-                "excel": self.order,
-                "db": site.order
-            }
+        # 10. 排序（排序字段 _sites_order 可能会被用户手动更新因此跳过）
+        # if (str(self.order) != str(site.order)):
+        #     not_equal_fields_dict["order"] = {
+        #         "excel": self.order,
+        #         "db": site.order
+        #     }
         # 11. LOGO，标志的图片链接
         if (str(self.thumbnail_pic_url) != str(site.thumbnail_pic_url)):
             not_equal_fields_dict["thumbnail_pic_url"] = {

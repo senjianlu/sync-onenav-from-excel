@@ -9,6 +9,8 @@ database = "wordpress"
 # Excel
 [excel]
 file_name = "OneNav 导航站数据集.xlsx"
+sites_sheet = "网址"
+spare_links_sheet = "备用链接地址（其他站点）"
 
 # 同步模式
 [sync]
@@ -20,3 +22,11 @@ mode = "part"
 [onenav]
 # 域名
 domain = "https://steam.cash"
+# 【暂不支持更改】固定链接设置
+permalink = "https://steam.cash/%post_id%.html"
+
+# 单元测试
+[test]
+file_name = "OneNav 导航站数据集.xlsx"
+sites_sheet = "测试网址"
+spare_links_sheet = "测试备用链接地址（其他站点）"

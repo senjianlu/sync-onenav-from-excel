@@ -39,11 +39,20 @@ def check_config():
         return False
     # 2. 检查 Excel 配置
     try:
+        # 2.1 检查文件名
         file_name = CONFIG["excel"]["file_name"]
-        if file_name == "":
+        if not file_name:
             raise Exception("Excel 文件名为空！")
+        # 2.2 检查站点表单名
+        sites_sheet = CONFIG["excel"]["sites_sheet"]
+        if not sites_sheet:
+            raise Exception("Excel 站点表单名 sites_sheet 为空！")
+        # 2.3 检查备用链接地址表单名
+        spare_links_sheet = CONFIG["excel"]["spare_links_sheet"]
+        if not spare_links_sheet:
+            raise Exception("Excel 备用链接地址表单名 spare_links_sheet 为空！")
     except Exception as e:
-        print("Excel 文件名读取失败，请检查配置文件！")
+        print("Excel 文件与表单名读取失败，请检查配置文件！")
         return False
     # 3. 检查同步模式
     try:
@@ -104,7 +113,14 @@ def main():
         print("Excel 文件名读取失败，请检查配置文件和文件路径！")
         return
     # 6. 读取 Excel 数据
-    data = load_data(file_path)
+    sites_sheet = CONFIG["excel"]["sites_sheet"]
+    spare_links_sheet = CONFIG["excel"]["spare_links_sheet"]
+    try:
+        data = load_data(file_path, sites_sheet, spare_links_sheet)
+    except Exception as e:
+        session.close()
+        print("Excel 数据读取失败，请检查数据合法性！")
+        return
     # 7. 使用 Excel 表中的数据创建 ORM 对象
     sites = generate_sites_from_excel_data(data)
     # 8. 检查所涉及的网址分类和网址标签是否都存在

@@ -10,6 +10,7 @@
 
 
 from models.OneNavSite import OneNavSite
+from models import WpTermTaxonomy
 from onenav import site
 
 
@@ -63,13 +64,14 @@ def test_insert(sites, session):
     all_site_objs = site.select_all(session)
     assert all_site_objs is not None
     # 详细插入的数据：
+    # 0️⃣ ✅ 默认数据
     # 1️⃣ ❌ test_link_01（数据不参与不同步）
     # 2️⃣ ✅ test_search_01 Google
     # 3️⃣ ✅ test_search_02 百度
     # 4️⃣ ✅ test_search_03 Bing
     # 5️⃣ ❌ test_search_04 360（不存在网址分类）
     # 6️⃣ ❌ test_search_05 DuckDuck（不存在网址标签）
-    assert len(all_site_objs) == (3 + 1)
+    assert len(all_site_objs) == (1 + 3)
     # 3. 判断插入的数据是否正确
     # 3.1 test_search_01 Google
     site_obj = site.select("test_search_01", session)
@@ -97,6 +99,42 @@ def test_insert(sites, session):
     assert site_obj.wechat_qr_pic_url is None
     assert site_obj._sync_site_id == "test_search_01"
     assert int(site_obj._post_id) == 12
+    # 3.2 test_search_02 百度
+    # todo
+    # 3.3 test_search_03 Bing
+    site_obj = site.select("test_search_03", session)
+    assert site_obj is not None
+    # print(site_obj.__dict__)
+    assert site_obj.favorite_ids == [2]
+    assert site_obj.tag_ids == [3]
+    assert site_obj.title == "Bing"
+    assert site_obj.content == "Bing 搜索。\n由微软强力驱动。"
+    assert site_obj.link == "https://bing.com"
+    assert len(site_obj.spare_links) == 0
+    assert site_obj.sescribe == "厉害的搜索引擎。33"
+    assert site_obj.language == "zh,en"
+    assert site_obj.country == "中国"
+    assert int(site_obj.order) == 0
+    assert site_obj.thumbnail_pic_url == "https://image.senjianlu.com/blog/2024-10-14/bing.png"
+    assert site_obj.preview_pic_url is None
+    assert site_obj.wechat_qr_pic_url is None
+    assert site_obj._sync_site_id == "test_search_03"
+    assert int(site_obj._post_id) == 14
+    # 4. 判断对应的网址分类旗下的网址数量是否正确
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 2).first()
+    assert favorite_wp_term_taxonomy is not None
+    # 0️⃣ ✅ 默认数据
+    # 2️⃣ ✅ test_search_01 Google
+    # 3️⃣ ❌ test_search_02 百度（没有分类）
+    # 4️⃣ ✅ test_search_03 Bing
+    assert favorite_wp_term_taxonomy.count == (1 + 2)
+    # 5. 判断对应的网址标签旗下的网址数量是否正确
+    tag_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 3).first()
+    assert tag_wp_term_taxonomy is not None
+    # 2️⃣ ❌ test_search_01 Google（没有标签）
+    # 3️⃣ ✅ test_search_02 百度
+    # 4️⃣ ✅ test_search_03 Bing
+    assert tag_wp_term_taxonomy.count == 2
     
 def test_update(session):
     """

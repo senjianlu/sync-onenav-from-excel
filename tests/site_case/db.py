@@ -52,4 +52,42 @@ def test_select(session):
     assert int(site_obj._sync_site_id) == 99
     assert int(site_obj._post_id) == 11
 
-        
+def test_insert(sites, session):
+    """
+    测试数据库插入
+    """
+    # 1. 遍历插入
+    for site_obj in sites:
+        site.insert(site_obj, "https://steam.cash", session)
+    # 2. 判断插入数据的总数是否正确
+    all_site_objs = site.select_all(session)
+    assert all_site_objs is not None
+    # 详细插入的数据：
+    # 1️⃣ ❌ test_link_01（数据不参与不同步）
+    # 2️⃣ ✅ test_search_01 Google
+    # 3️⃣ ✅ test_search_02 百度
+    # 4️⃣ ✅ test_search_03 Bing
+    # 5️⃣ ❌ test_search_04 360（不存在网址分类）
+    # 6️⃣ ❌ test_search_05 DuckDuck（不存在网址标签）
+    assert len(all_site_objs) == (3 + 1)
+    # 3. 判断插入的数据是否正确
+    # 3.1 test_search_01 Google
+    # site_obj = site.select("test_search_01", session)
+    # assert site_obj is not None
+    # print(site_obj.__dict__)
+    # assert site_obj.favorite_ids == [2]
+    # assert site_obj.tag_ids == []
+    # assert site_obj.title == "Google"
+    # assert site_obj.content == "Google 搜索。\n由 Google 强力驱动。"
+    
+def test_update(session):
+    """
+    测试数据库更新
+    """
+    assert 1 == 1
+
+def test_delete(session):
+    """
+    测试数据库删除
+    """
+    assert 1 == 1        

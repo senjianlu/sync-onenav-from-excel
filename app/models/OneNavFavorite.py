@@ -194,7 +194,12 @@ class OneNavFavorite():
         # 2. 通过 term_id 查询 wp_termmeta 表
         wp_termmeta_rows = session.query(WpTermmeta).filter(WpTermmeta.term_id == term_id).all()
         # 3. 通过 term_id 查询 wp_term_taxonomy 表
-        wp_term_taxonomy_row = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == term_id).first()
+        wp_term_taxonomy_row = session.query(WpTermTaxonomy).filter(
+            and_(
+                WpTermTaxonomy.term_id == term_id,
+                WpTermTaxonomy.taxonomy == "favorites"
+            )
+        ).first()
         if not wp_term_taxonomy_row:
             return None
         # 4. 生成网址分类对象

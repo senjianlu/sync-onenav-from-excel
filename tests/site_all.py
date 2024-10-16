@@ -84,3 +84,55 @@ def test_db_select():
     finally:
         # 3. 关闭数据库
         session.close()
+
+def test_db_insert():
+    """
+    测试数据库插入
+    """
+    # 1. 连接数据库
+    session = _connect_db()
+    # 2. 读取 Excel 中的数据并转换为对象
+    file_name = CONFIG["test"]["file_name"]
+    file_path = "../{}".format(file_name)
+    sites_sheet = CONFIG["test"]["sites_sheet"]
+    spare_links_sheet = CONFIG["test"]["spare_links_sheet"]
+    data = site_excel.test_load(file_path, sites_sheet, spare_links_sheet)
+    sites = site_excel.test_convert(data)
+    # 3. 测试
+    try:
+        site_db.test_insert(sites, session)
+    except Exception as e:
+        raise e
+    finally:
+        # 4. 关闭数据库
+        session.close()
+
+def test_db_update():
+    """
+    测试数据库更新
+    """
+    # 1. 连接数据库
+    session = _connect_db()
+    # 2. 测试
+    try:
+        site_db.test_update(session)
+    except Exception as e:
+        raise e
+    finally:
+        # 3. 关闭数据库
+        session.close()
+
+def test_db_delete():
+    """
+    测试数据库删除
+    """
+    # 1. 连接数据库
+    session = _connect_db()
+    # 2. 测试
+    try:
+        site_db.test_delete(session)
+    except Exception as e:
+        raise e
+    finally:
+        # 3. 关闭数据库
+        session.close()

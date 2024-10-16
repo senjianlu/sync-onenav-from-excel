@@ -26,8 +26,8 @@ def test_load(file_path, sites_sheet, spare_links_sheet):
     for site_row in data["site_rows"]:
         # 2.1 test_search_01 Google
         if site_row[1] == "test_search_01":
-            # (True, 'test_search_01', None, None, 1, None, 'Google', 'Google 搜索。\n由 Google 强力驱动。', 'https://google.com', '=IF(ISBLANK($B3), "", COUNTIFS(\'备用链接地址（其他站点）\'!$A$2:$A$20, "="&$B3, \'备用链接地址（其他站点）\'!$A$2:$A$20, "<>"))', '很厉害的搜索引擎。', 'zh,en', '中国', 0, 'https://image.senjianlu.com/blog/2024-10-14/google.png', None, None, None)
-            assert str(site_row[4]) == "1"
+            # (True, 'test_search_01', None, None, 2, None, 'Google', 'Google 搜索。\n由 Google 强力驱动。', 'https://google.com', '=IF(ISBLANK($B3), "", COUNTIFS(\'备用链接地址（其他站点）\'!$A$2:$A$20, "="&$B3, \'备用链接地址（其他站点）\'!$A$2:$A$20, "<>"))', '很厉害的搜索引擎。', 'zh,en', '中国', 0, 'https://image.senjianlu.com/blog/2024-10-14/google.png', None, None, None)
+            assert str(site_row[4]) == "2"
             assert site_row[5] is None
             assert site_row[6] == "Google"
             assert site_row[7] == "Google 搜索。\n由 Google 强力驱动。"
@@ -79,7 +79,7 @@ def test_convert(data):
     checked_sites_count = 0
     for site in sites:
         if site._sync_site_id == "test_search_01":
-            assert site.favorite_ids == [1]
+            assert site.favorite_ids == [2]
             assert site.tag_ids == []
             assert site.title == "Google"
             assert site.content == "Google 搜索。\n由 Google 强力驱动。"

@@ -109,6 +109,37 @@ python3 main.py
     - ⬜ 展示 (show)
 - ⬜ 将结果更新回 Excel 表中
 
+## 测试
+准备工作：
+```bash
+# 进入 tests 目录
+cd tests
+# 启动 MySQL
+docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=myPasswordForMySQL mysql:5.7
+# 创建 WordPress 数据库
+docker exec -i mysql mysql -uroot -pmyPasswordForMySQL -e "CREATE DATABASE wordpress;"
+# 修改下默认编码
+docker exec -i mysql mysql -uroot -pmyPasswordForMySQL -e "ALTER DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+# 导入测试所需数据
+docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < sql/create_tables_before_test.sql
+docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < sql/insert_data_before_test.sql
+```
+
+执行各个单元测试：
+```bash
+# 进入 tests 目录
+# cd tests
+# 执行测试
+pytest -vs favorite_all.py
+pytest -vs tag_all.py
+pytest -vs site_all.py
+```
+
+结束后的清理工作：
+```bash
+# 删除 MySQL 容器
+docker stop mysql && docker rm mysql
+```
 
 ## 更多文章
 你可以在我的[博客](https://senjianlu.com)中找到数篇与 [OneNav 相关的文章](https://senjianlu.com/tags/steam-cash/)，如果你想二开，它们应该会对你有所帮助。

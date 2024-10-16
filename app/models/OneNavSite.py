@@ -11,7 +11,8 @@
 
 import time
 import urllib.parse
-from datetime import datetime, UTC
+from datetime import datetime
+from pytz import UTC
 from sqlalchemy import or_
 
 from models.WpPosts import WpPosts

@@ -31,11 +31,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run sqls before tests
+      - name: Run SQL before tests
         run: |
-          # path: tests/sql/create_tables_before_test.sql
-          docker cp tests/sql/create_tables_before_test.sql mysql:/create_tables_before_test.sql
-          docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < /create_tables_before_test.sql
+          # SQL file path: tests/sql/create_tables_before_test.sql
+          docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < tests/sql/create_tables_before_test.sql
 
       - name: Run tests
         run: |

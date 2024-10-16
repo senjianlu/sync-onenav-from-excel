@@ -72,13 +72,31 @@ def test_insert(sites, session):
     assert len(all_site_objs) == (3 + 1)
     # 3. 判断插入的数据是否正确
     # 3.1 test_search_01 Google
-    # site_obj = site.select("test_search_01", session)
-    # assert site_obj is not None
+    site_obj = site.select("test_search_01", session)
+    assert site_obj is not None
     # print(site_obj.__dict__)
-    # assert site_obj.favorite_ids == [2]
-    # assert site_obj.tag_ids == []
-    # assert site_obj.title == "Google"
-    # assert site_obj.content == "Google 搜索。\n由 Google 强力驱动。"
+    assert site_obj.favorite_ids == [2]
+    assert site_obj.tag_ids == []
+    assert site_obj.title == "Google"
+    assert site_obj.content == "Google 搜索。\n由 Google 强力驱动。"
+    assert site_obj.link == "https://google.com"
+    assert len(site_obj.spare_links) == 1
+    checked_spare_links_count = 0
+    for spare_link in site_obj.spare_links:
+        if spare_link.name == "Google 国内":
+            assert spare_link.url == "https://google.cn"
+            assert spare_link.note == "谷歌中国。"
+            checked_spare_links_count += 1
+    assert checked_spare_links_count == 1
+    assert site_obj.sescribe == "很厉害的搜索引擎。"
+    assert site_obj.language == "zh,en"
+    assert site_obj.country == "中国"
+    assert int(site_obj.order) == 0
+    assert site_obj.thumbnail_pic_url == "https://image.senjianlu.com/blog/2024-10-14/google.png"
+    assert site_obj.preview_pic_url is None
+    assert site_obj.wechat_qr_pic_url is None
+    assert site_obj._sync_site_id == "test_search_01"
+    assert int(site_obj._post_id) == 12
     
 def test_update(session):
     """

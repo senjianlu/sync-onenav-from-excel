@@ -111,6 +111,10 @@ python3 main.py
 - ⬜ 将结果更新回 Excel 表中
 
 ## 测试
+> 本仓库在 `git push` 的时候会自动触发 GitHub Actions 进行单元测试，你可以在 [All workflows](https://github.com/senjianlu/sync-onenav-from-excel/actions/) 看到历次测试的结果。  
+> 该测试只用以确保最基础的功能（包括针对单个网址的增删改查、对网址分类和网址标签的检查等）正常，不保证所有的业务场景都能覆盖到。  
+
+**如果你想手动进行测试的话，请按照以下步骤进行**。  
 准备工作：
 ```bash
 # 进入 tests 目录

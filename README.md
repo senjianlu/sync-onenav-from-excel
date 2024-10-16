@@ -6,7 +6,7 @@
 将 Excel 中的网址同步到 OneNav 一为导航中。  
 **⚠️ 该脚本仅适用于 `V4.1810` 和其前后没有数据结构变化的版本**！  
 **⚠️ Python3 版本需要在 `3.10` 以上**！  
-➡️ 测试站：[Steam Cash 导航站](https://steam.cash)
+➡️ 演示站：[Steam Cash 导航站](https://steam.cash)
 
 ## 事前提醒
 ### 一、该脚本只对来源是 Excel 的网址进行同步
@@ -147,7 +147,7 @@ pytest -vs site_all.py
 docker stop mysql && docker rm mysql
 ```
 
-# 更多文章
+## 更多文章
 你可以在我的[博客](https://senjianlu.com)中找到数篇与 [OneNav 相关的文章](https://senjianlu.com/tags/steam-cash/)，如果你想二开，它们应该会对你有所帮助。
 - [使用 Docker 部署 MySQL + WordPress 并安装 OneNav 一为导航](https://senjianlu.com/2024/10/10/docker_mysql_wordpress_onenav/)
 - [OneNav 一为导航新建目录与导航网址](https://senjianlu.com/2024/10/11/wordpress_onenav_add_link/)

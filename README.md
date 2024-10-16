@@ -116,10 +116,11 @@ python3 main.py
 cd tests
 # 启动 MySQL
 docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=myPasswordForMySQL mysql:5.7
+# 修改下默认编码
+docker exec -i mysql /bin/bash -c "echo '[mysql]' >> /etc/mysql/my.cnf && echo 'default-character-set=utf8mb4' >> /etc/mysql/my.cnf"
+docker restart mysql
 # 创建 WordPress 数据库
 docker exec -i mysql mysql -uroot -pmyPasswordForMySQL -e "CREATE DATABASE wordpress;"
-# 修改下默认编码
-docker exec -i mysql mysql -uroot -pmyPasswordForMySQL -e "ALTER DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 # 导入测试所需数据
 docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < sql/create_tables_before_test.sql
 docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < sql/insert_data_before_test.sql

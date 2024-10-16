@@ -110,7 +110,7 @@ python3 main.py
 ### 七、查看结果
 之后回到你的导航站点，刷新页面，应该就可以看到对应的修改生效了 🎉。
 
-# 测试
+## 测试
 > 本仓库在 `git push` 的时候会自动触发 GitHub Actions 进行单元测试，你可以在 [All workflows](https://github.com/senjianlu/sync-onenav-from-excel/actions/) 看到历次测试的结果。  
 > 该测试只用以确保最基础的功能（包括针对单个网址的增删改查、对网址分类和网址标签的检查等）正常，不保证所有的业务场景都能覆盖到。  
 

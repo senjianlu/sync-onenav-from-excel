@@ -47,7 +47,6 @@ def test_db_select():
     try:
         tag_db.test_select(session)
     except Exception as e:
-        # pytest 抛出异常
         raise e
     finally:
         # 3. 关闭数据库

@@ -1,0 +1,50 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run MySQL by Docker
+        run: |
+          # Run MySQL by Docker
+          docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=myPasswordForMySQL mysql:5.7
+          # Wait for MySQL to start
+          sleep 30
+          # Create database
+          docker exec -i mysql mysql -uroot -pmyPasswordForMySQL -e "CREATE DATABASE wordpress;"
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run sqls before tests
+        run: |
+          # path: tests/sql/create_tables_before_test.sql
+          docker cp tests/sql/create_tables_before_test.sql mysql:/create_tables_before_test.sql
+          docker exec -i mysql mysql -uroot -pmyPasswordForMySQL wordpress < /create_tables_before_test.sql
+
+      - name: Run tests
+        run: |
+          cd tests
+          pytest -vs favorite_all.py
+          pytest -vs tag_all.py
+          pytest -vs site_all.py
+      
+      - name: Close MySQL by Docker
+        run: |
+          docker stop mysql
+          docker rm mysql

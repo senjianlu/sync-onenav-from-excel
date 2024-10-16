@@ -3,10 +3,10 @@
 #
 # @AUTHOR: Rabbir
 # @FILE: site_all.py
-# @DATE: 2024/10/15
-# @TIME: 17:19:30
+# @DATE: 2024/10/16
+# @TIME: 10:09:09
 #
-# @DESCRIPTION: 网址相关的测试用例集合
+# @DESCRIPTION: 网址标签的测试用例集合
 
 
 def test_01():

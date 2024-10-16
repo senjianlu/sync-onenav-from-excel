@@ -10,6 +10,10 @@ TRUNCATE TABLE `wp_postmeta`;
 INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('1', '未分类', 'uncategorized', '0');
 INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('2', '测试分类', 'test_favorite', '0');
 INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('3', '测试标签', 'test_tag', '0');
+INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('7', '测试分类 224', 'test_favorite_224', '0');
+INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('8', '测试分类 BBD', 'test_favorite_bbd', '0');
+INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('9', '测试标签 113', 'test_favorite_113', '0');
+INSERT INTO `wp_terms` (`term_id`, `name`, `slug`, `term_group`) VALUES ('10', '测试标签 AAC', 'test_favorite_aac', '0');
 
 -- 测试分类和标签的元数据
 INSERT INTO `wp_termmeta` (`meta_id`, `term_id`, `meta_key`, `meta_value`) VALUES ('1', '2', '_term_order', '99');
@@ -25,6 +29,10 @@ INSERT INTO `wp_termmeta` (`meta_id`, `term_id`, `meta_key`, `meta_value`) VALUE
 INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('1', '1', 'category', '', '0', '0');
 INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('2', '2', 'favorites', '测试分类的描述', '0', '0');
 INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('3', '3', 'sitetag', '测试描述\r\n另起一行。', '0', '0');
+INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('7', '7', 'favorites', '测试分类的描述 224', '0', '0');
+INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('8', '8', 'favorites', '测试分类的描述 BBD', '0', '0');
+INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('9', '9', 'sitetag', '测试描述 113\r\n另起一行。', '0', '0');
+INSERT INTO `wp_term_taxonomy` (`term_taxonomy_id`, `term_id`, `taxonomy`, `description`, `parent`, `count`) VALUES ('10', '10', 'sitetag', '测试描述 AAC\r\n另起一行。', '0', '0');
 
 -- 测试网址
 INSERT INTO `wp_posts` (

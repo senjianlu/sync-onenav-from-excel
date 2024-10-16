@@ -10,7 +10,8 @@
 
 
 from models.OneNavSite import OneNavSite
-from models import WpTermTaxonomy
+from models.OneNavSpareSite import OneNavSpareSite
+from models.WpTermTaxonomy import WpTermTaxonomy
 from onenav import site
 
 
@@ -140,10 +141,128 @@ def test_update(session):
     """
     测试数据库更新
     """
-    assert 1 == 1
+    # 1. 获取 test_search_01 Google 的数据
+    site_obj = site.select("test_search_01", session)
+    # 2. 更新数据
+    site_obj.favorite_ids = [2, 7, 8]
+    site_obj.tag_ids = [9, 10]
+    site_obj.title = "Google 搜索"
+    site_obj.content = "Google 搜索。\n由 Google 强力驱动。\n改修后。"
+    site_obj.link = "https://google.com.cn"
+    site_obj.spare_links.append(OneNavSpareSite(name="Google 国际", url="https://google.com", note="谷歌国际。"))
+    site_obj.sescribe = "很厉害的搜索引擎。改修后。"
+    site_obj.language = "zh,en,fr"
+    site_obj.country = "美国"
+    site_obj.order = 0
+    site_obj.thumbnail_pic_url = "https://image.senjianlu.com/blog/2024-10-14/google.cn.png"
+    site_obj.preview_pic_url = "https://image.senjianlu.com/blog/2024-10-14/google.cn.preview.png"
+    site_obj.wechat_qr_pic_url = "https://image.senjianlu.com/blog/2024-10-14/google.cn.wechat.png"
+    # 3. 更新到数据库
+    site.update(site_obj, session)
+    # 4. 判断更新的数据是否正确
+    site_obj = site.select("test_search_01", session)
+    assert site_obj is not None
+    # print(site_obj.__dict__)
+    assert site_obj.favorite_ids == [2, 7, 8]
+    assert site_obj.tag_ids == [9, 10]
+    assert site_obj.title == "Google 搜索"
+    assert site_obj.content == "Google 搜索。\n由 Google 强力驱动。\n改修后。"
+    assert site_obj.link == "https://google.com.cn"
+    assert len(site_obj.spare_links) == 2
+    checked_spare_links_count = 0
+    for spare_link in site_obj.spare_links:
+        if spare_link.name == "Google 国内":
+            assert spare_link.url == "https://google.cn"
+            assert spare_link.note == "谷歌中国。"
+            checked_spare_links_count += 1
+        elif spare_link.name == "Google 国际":
+            assert spare_link.url == "https://google.com"
+            assert spare_link.note == "谷歌国际。"
+            checked_spare_links_count += 1
+    assert checked_spare_links_count == 2
+    assert site_obj.sescribe == "很厉害的搜索引擎。改修后。"
+    assert site_obj.language == "zh,en,fr"
+    assert site_obj.country == "美国"
+    assert int(site_obj.order) == 0
+    assert site_obj.thumbnail_pic_url == "https://image.senjianlu.com/blog/2024-10-14/google.cn.png"
+    assert site_obj.preview_pic_url == "https://image.senjianlu.com/blog/2024-10-14/google.cn.preview.png"
+    assert site_obj.wechat_qr_pic_url == "https://image.senjianlu.com/blog/2024-10-14/google.cn.wechat.png"
+    assert site_obj._sync_site_id == "test_search_01"
+    assert int(site_obj._post_id) == 12
+    # 5. 判断对应的网址分类旗下的网址数量是否正确
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 2).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 3
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 7).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 1
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 8).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 1
+    # 6. 判断对应的网址标签旗下的网址数量是否正确
+    tag_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 9).first()
+    assert tag_wp_term_taxonomy is not None
+    assert tag_wp_term_taxonomy.count == 1
+    tag_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 10).first()
+    assert tag_wp_term_taxonomy is not None
+    assert tag_wp_term_taxonomy.count == 1
+    # 7. 再次更新数据
+    site_obj.favorite_ids = []
+    site_obj.tag_ids = []
+    site.update(site_obj, session)
+    # 8. 判断对应的网址分类旗下的网址数量是否正确
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 2).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 2
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 7).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 0
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 8).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 0
+    # 9. 判断对应的网址标签旗下的网址数量是否正确
+    tag_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 9).first()
+    assert tag_wp_term_taxonomy is not None
+    assert tag_wp_term_taxonomy.count == 0
+    tag_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 10).first()
+    assert tag_wp_term_taxonomy is not None
+    assert tag_wp_term_taxonomy.count == 0
 
 def test_delete(session):
     """
     测试数据库删除
     """
-    assert 1 == 1        
+    # 1. 删除 test_search_01 Google
+    site_obj = site.select("test_search_01", session)
+    site.delete(site_obj, session)
+    # 2. 判断删除后的数据是否正确
+    site_obj = site.select("test_search_01", session)
+    assert site_obj is None
+    # 3. 判断对应的网址分类旗下的网址数量是否正确
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 2).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 2
+    # 4. 删除 test_search_02 百度
+    site_obj = site.select("test_search_02", session)
+    site.delete(site_obj, session)
+    # 5. 判断删除后的数据是否正确
+    site_obj = site.select("test_search_02", session)
+    assert site_obj is None
+    # 6. 判断对应的网址标签旗下的网址数量是否正确
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 3).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 1
+    # 7. 删除 test_search_03 Bing
+    site_obj = site.select("test_search_03", session)
+    site.delete(site_obj, session)
+    # 8. 判断删除后的数据是否正确
+    site_obj = site.select("test_search_03", session)
+    assert site_obj is None
+    # 9. 判断对应的网址分类旗下的网址数量是否正确
+    favorite_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 2).first()
+    assert favorite_wp_term_taxonomy is not None
+    assert favorite_wp_term_taxonomy.count == 1
+    # 10. 判断对应的网址标签旗下的网址数量是否正确
+    tag_wp_term_taxonomy = session.query(WpTermTaxonomy).filter(WpTermTaxonomy.term_id == 3).first()
+    assert tag_wp_term_taxonomy is not None
+    assert tag_wp_term_taxonomy.count == 0

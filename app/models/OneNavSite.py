@@ -618,7 +618,7 @@ class OneNavSite():
                 ).update({
                     "meta_value": new_wp_postmeta_row.meta_value
                 })
-        # 5.3 判断需要新增或删除的网址分类
+        # 5.3 判断需要新增或删除的网址分类和网址标签
         wp_term_relationships_rows = session.query(WpTermRelationships).filter(
             WpTermRelationships.object_id == post_id
         ).all()
@@ -626,7 +626,7 @@ class OneNavSite():
         new_term_taxonomy_ids = [wp_term_taxonomy_row.term_taxonomy_id for wp_term_taxonomy_row in wp_term_taxonomy_rows]
         term_taxonomy_ids_2_add = list(set(new_term_taxonomy_ids) - set(old_term_taxonomy_ids))
         term_taxonomy_ids_2_delete = list(set(old_term_taxonomy_ids) - set(new_term_taxonomy_ids))
-        # 5.4 添加新的网址分类
+        # 5.4 添加新的网址分类和网址标签
         for add_term_taxonomy_id in term_taxonomy_ids_2_add:
             new_wp_term_relationships_row = WpTermRelationships(
                 object_id=post_id,
@@ -639,7 +639,7 @@ class OneNavSite():
             ).update({
                 "count": WpTermTaxonomy.count + 1
             })
-        # 5.5 删除不需要的网址分类
+        # 5.5 删除不需要的网址分类和网址标签
         for delete_term_taxonomy_id in term_taxonomy_ids_2_delete:
             session.query(WpTermRelationships).filter(
                 WpTermRelationships.object_id == post_id,
@@ -663,7 +663,7 @@ class OneNavSite():
         session.query(WpPosts).filter(WpPosts.ID == post_id).delete()
         # 2. 删除 wp_postmeta 表数据
         session.query(WpPostmeta).filter(WpPostmeta.post_id == post_id).delete()
-        # 3. 删除和更新网址分类的关联数据
+        # 3. 删除和更新网址分类与网址标签有关的数据
         wp_term_relationships_rows = session.query(WpTermRelationships).filter(
             WpTermRelationships.object_id == post_id
         ).all()

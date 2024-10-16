@@ -110,6 +110,7 @@ def test_db_insert():
 def test_db_update():
     """
     测试数据库更新
+    ✅ 需要在 test_db_insert() 之后执行
     """
     # 1. 连接数据库
     session = _connect_db()
@@ -125,6 +126,7 @@ def test_db_update():
 def test_db_delete():
     """
     测试数据库删除
+    ✅ 需要在 test_db_update() 之后执行
     """
     # 1. 连接数据库
     session = _connect_db()

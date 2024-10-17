@@ -166,3 +166,7 @@ cython_debug/
 
 # Temp config file
 config.toml.temp
+
+# Test website data
+config.toml.test
+Steam Cash 测试站数据集.xlsx

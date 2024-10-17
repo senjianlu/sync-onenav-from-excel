@@ -23,7 +23,7 @@ def test_01(session):
     """
     函数说明: 测试查询网址
     """
-    site = one_nav_site.select("aaawbbbb", session)
+    site = one_nav_site.select("test_search_01", session)
     print(site.__dict__ if site else None)
     if site:
         for spare_link in site.spare_links:
@@ -98,13 +98,13 @@ if __name__ == "__main__":
     session = get_db_session(db_engine)
     # 2. 运行方法
     try:
-        # test_01(session)
+        test_01(session)
         # test_02(session)
         # test_03(session)
         # test_04()
         # test_05(session)
         # test_06(session)
-        test_07(session)
+        # test_07(session)
     except Exception as e:
         print(e)
     finally:

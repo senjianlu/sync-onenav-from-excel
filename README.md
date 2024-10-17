@@ -6,7 +6,7 @@
 将 Excel 中的网址同步到 OneNav 一为导航中。  
 **⚠️ 该脚本仅适用于 `V4.1810` 和其前后没有数据结构变化的版本**！  
 **⚠️ Python3 版本需要在 `3.10` 以上**！  
-➡️ 演示站：[Steam Cash 导航站](https://steam.cash)
+➡️ 测试站：[Steam Cash 测试站](https://test.steam.cash)
 
 ## 事前提醒
 ### 一、该脚本只对来源是 Excel 的网址进行同步
@@ -18,7 +18,12 @@
 虽然我已经尽量缩小了影响范围，脚本仅会操作 `wp_posts`、`wp_postmeta`、`wp_term_taxonomy` 和 `wp_term_relationships` 表，但是仍然无法保证 100% 不会出现预想外的情况而损坏你的站点数据。  
 **你可以在 `工具` -> `导出` 处执行下载备份的操作**。  
 
-### 三、有问题和建议请提交 Issue
+### 三、⭐ 请修改固定链接
+请将固定链接修改为类似 `https://steam.cash/%post_id%.html` 的样式：  
+![修改固定链接](https://image.senjianlu.com/blog/2024-10-17/permalink.png)  
+我不确定这是否是强制的，如果出现任何链接找不到的情况，你可以这么试试。
+
+### 四、有问题和建议请提交 Issue
 如果你有好的想法，可以提交 [Issue](https://github.com/senjianlu/sync-onenav-from-excel/issues)，我会考虑添加到脚本中。  
 **如果你发现了 Bug，请不要有顾虑直接提交 Issue 或是在线联系我，我会尽快修复**。
 
